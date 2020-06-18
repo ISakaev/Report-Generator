@@ -1,3 +1,4 @@
+import report.*;
 import classes.*;
 import org.xml.sax.SAXException;
 import parsers.*;
@@ -9,20 +10,24 @@ public class Main {
 
     public static final String SETTING_PATH = "src/main/resources/settings.xml";
     public static final String SOURCE_DATA = "src/main/resources/source-data.tsv";
+    public static final String REPORT_PATH = "src/main/resources/report.txt";
 
     public static void main(String[] args) throws ParserConfigurationException, IOException, SAXException {
 
-        TSVParser parser = new TSVParser(SOURCE_DATA);
-        List records = parser.loadRecordsFromFile();
-        for (Object r: records){
-            System.out.println(r);
-        }
-        System.out.println("------------------------");
+        List<Record> recordList;
+        Settings settings;
 
+        // Парсим файл с данными
+        TSVParser parser = new TSVParser(SOURCE_DATA);
+        recordList = parser.loadRecordsFromFile();
+
+        // Парсим файл с настройками
         XMLParser p = new XMLParser();
-        Settings set = p.loadSettingsFromFile(SETTING_PATH);
-        System.out.println(set.getPage().toString());
-        List<Column> s = set.getList();
-        s.stream().forEach(System.out::println);
+        settings = p.loadSettingsFromFile(SETTING_PATH);
+
+        // Создаем репорт
+        Report report = new Report(settings,REPORT_PATH, recordList );
+        report.createReport();
+
     }
 }
