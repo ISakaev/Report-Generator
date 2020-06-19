@@ -19,76 +19,13 @@ public class Field {
 
     public List<String> createField(Record record) {
 //        Расчет количества строк для колон для текущей записи
-        StringSeparator stringSeparator = new StringSeparator();
         List<String> listStringForPage = new ArrayList<>();
-        String[] index1;
-        String[] index2;
-        String[] index3;
-
-//        Расчет первой колонки
-        Integer number = record.getNumber();
-        String numberString;
-        if (number.toString().length() < columnList.get(0).getWidth()) {
-            index1 = new String[1];
-            numberString = number.toString();
-            while (numberString.length() < columnList.get(0).getWidth()) {
-                numberString += " ";
-            }
-            index1[0] = numberString;
-        } else {                            // Если цифра большая и не влезает в одну строку
-            index1 = new String[2];
-            index1[0] = number.toString().substring(0, 7);
-            numberString = number.toString().substring(7, number.toString().length() - 1);
-            while (numberString.length() < columnList.get(0).getWidth()) {
-                numberString += " ";
-            }
-            index1[1] = numberString;
-        }
-//        Расчет второй колонки
-        String date = record.getDate();
-        String dateString;
-        if (date.length() < columnList.get(1).getWidth()) {
-            index2 = new String[1];
-            dateString = date;
-            while (dateString.length() < columnList.get(1).getWidth()) {
-                dateString += " ";
-            }
-            index2[0] = dateString;
-        } else {                // Если текст большой и не влезает в одну строку
-            index2 = new String[2];
-            index2[0] = date.substring(0, date.lastIndexOf('/'));
-            while (index2[0].length() < columnList.get(1).getWidth()) {
-                index2[0] += " ";
-            }
-            dateString = date.substring(date.lastIndexOf('/'));
-            while (dateString.length() < columnList.get(1).getWidth()) {
-                dateString += " ";
-            }
-            index2[1] = dateString;
-        }
-
-//        Расчет третьей колонки
-        String name = record.getName();
-        String nameString;
-        if (name.length() < columnList.get(2).getWidth()) {
-            index3 = new String[1];
-            nameString = name;
-            while (nameString.length() < columnList.get(2).getWidth()) {
-                nameString += " ";
-            }
-            index3[0] = nameString;
-        } else {
-            String textAfterSeparation = stringSeparator.SeparateString(record.getName(), settings.getList().get(2).getWidth());
-            index3 = textAfterSeparation.split("/");
-            for (int i = 0; i < index3.length; i++) {
-                String example = index3[i];
-                while (example.length() < columnList.get(2).getWidth()) {
-                    example += " ";
-                }
-                index3[i] = example;
-
-            }
-        }
+        //        Расчет первой колонки
+        String[] index1 = createDataInColumn(record.getNumber().toString(), 0);
+        //        Расчет второй колонки
+        String[] index2 = createDataInColumn(record.getDate(), 1);
+        //        Расчет третьей колонки
+        String[] index3 = createDataInColumn(record.getName(), 2);
 
 //        Заполнение коллекции строк на текущую запись
         int countLines = index3.length > index2.length ?
@@ -96,35 +33,62 @@ public class Field {
 
         for (int i = 0; i < countLines; i++) {
             StringBuilder builder = new StringBuilder();
-            builder.append("| ");
-            if (index1.length < i + 1) {
-                for (int j = 0; j < columnList.get(0).getWidth(); j++) {
-                    builder.append(" ");
-                }
-            } else {
-                builder.append(index1[i]);
-            }
-            builder.append(" | ");
 
-            if (index2.length < i + 1) {
-                for (int j = 0; j < columnList.get(1).getWidth(); j++) {
-                    builder.append(" ");
-                }
-            } else {
-                builder.append(index2[i]);
-            }
+            builder.append("| ");
+                // Заполняем колонку с индексов 0 , i-й строки
+            builder.append(FillLine(index1, i, 0));
             builder.append(" | ");
-            if (index3.length < i + 1) {
-                for (int j = 0; j < columnList.get(2).getWidth(); j++) {
-                    builder.append(" ");
-                }
-            } else {
-                builder.append(index3[i]);
-            }
+                // Заполняем колонку с индексов 1 , i-й строки
+            builder.append(FillLine(index2, i, 1));
+            builder.append(" | ");
+                // Заполняем колонку с индексов 2 , i-й строки
+            builder.append(FillLine(index3, i, 2));
             builder.append(" |");
 
             listStringForPage.add(builder.toString());
         }
         return listStringForPage;
+    }
+
+        // Разделение текста на массив строк одинаковой длины
+    private String[] createDataInColumn(String parameterOfRecord, Integer indexOfLIst){
+        StringSeparator stringSeparator = new StringSeparator();
+        String[] index;
+        String name = parameterOfRecord;
+        String nameString;
+
+        if (name.length() < columnList.get(indexOfLIst).getWidth()) {       // Если текст влезает в одну ячейку
+            index = new String[1];
+            nameString = name;
+            while (nameString.length() < columnList.get(indexOfLIst).getWidth()) {
+                nameString += " ";
+            }
+            index[0] = nameString;
+        } else {                                                            // Если текст не влезает в одну ячейку
+            String textAfterSeparation = stringSeparator.
+                    SeparateString(parameterOfRecord, settings.getList().get(indexOfLIst).getWidth());
+            index = textAfterSeparation.split("\t");
+            for (int i = 0; i < index.length; i++) {
+                String example = index[i];
+                while (example.length() < columnList.get(indexOfLIst).getWidth()) {
+                    example += " ";
+                }
+                index[i] = example;
+            }
+        }
+        return index;
+    }
+
+    // Заполнение поля в колонке
+    private String FillLine(String[] arrayWithData, Integer indexFor, Integer indexColumn){
+        StringBuilder builder = new StringBuilder();
+        if (arrayWithData.length < indexFor + 1) {
+            for (int j = 0; j < columnList.get(indexColumn).getWidth(); j++) {
+                builder.append(" ");
+            }
+        } else {
+            builder.append(arrayWithData[indexFor]);
+        }
+        return builder.toString();
     }
 }

@@ -25,7 +25,7 @@ public class StringSeparator {
             String[] longText;
             while (inputText.length() > widthColumn){           // Добавляем пробелы до необходимой длины колонки
                 longText = SeparateText(inputText, widthColumn);
-                outText += longText[0] + "/";
+                outText += longText[0] + "\t";
                 inputText = longText[1];
             }
             outText += inputText;
@@ -34,19 +34,26 @@ public class StringSeparator {
     }
 
     // Разделение текста размером не более ширины колонки
-    public String[] SeparateText(String string, Integer widthColumn ){
+    private String[] SeparateText(String string, Integer widthColumn ){
         String[] separateTextString = new String[2];
-        if(SeparateFindWhitespace(string, (widthColumn + 1)) > 0){  // Проверяем если ли в строке пробел
+        if(SeparateFindWhitespace(string, (widthColumn + 1)) > 0){  // Проверяем если ли в строке пробел.
             int indexWhitespace = SeparateFindWhitespace(string, (widthColumn + 1));
             separateTextString[0] = string.substring(0, indexWhitespace);
             separateTextString[1] = string.substring(indexWhitespace + 1);
 
             return separateTextString;
         }
-        else if (SeparateFindDash(string, widthColumn) > 0){      // Проверяем если ли в строке дефис
+        else if (SeparateFindDash(string, widthColumn) > 0){      // Проверяем если ли в строке дефис.
             int indexDash = SeparateFindDash(string, widthColumn);
             separateTextString[0] = string.substring(0, indexDash);
             separateTextString[1] = string.substring(indexDash);
+            return separateTextString;
+        }
+        // Проверяем если ли в строке символ который не является буквой или цифрой.
+        else if (SeparateSymbolFind(string, widthColumn) > 0){
+            int indexSymbol = SeparateSymbolFind(string, widthColumn);
+            separateTextString[0] = string.substring(0, indexSymbol);
+            separateTextString[1] = string.substring(indexSymbol);
             return separateTextString;
         }
         else{                                     // Если в строке нет пробела и дефиса, то разделяем по ширине колонки
@@ -58,7 +65,7 @@ public class StringSeparator {
 
     }
     // Поиск последнего индекса "дефис" в сроке
-    public int SeparateFindDash(String string, Integer widthColumn){
+    private int SeparateFindDash(String string, Integer widthColumn){
         int index = 0;
         if (widthColumn > string.length()){
             widthColumn = string.length();
@@ -73,13 +80,28 @@ public class StringSeparator {
     }
 
     // Поиск последнего индекса "пробела" в сроке
-    public int SeparateFindWhitespace(String string, Integer widthColumn){
+    private int SeparateFindWhitespace(String string, Integer widthColumn){
         int index = 0;
         if (widthColumn > string.length()){
             widthColumn = string.length();
         }
         for(int i = (widthColumn-1); i >0 ; i--){
             if (Character.isWhitespace(string.charAt(i))){
+                index = i;
+                return index;
+            }
+        }
+        return index;
+    }
+
+    // Поиск последнего индекса-разделителя в сроке
+    private int SeparateSymbolFind (String string, Integer widthColumn){
+        int index = 0;
+        if (widthColumn > string.length()){
+            widthColumn = string.length();
+        }
+        for(int i = (widthColumn-1); i >0 ; i--){
+            if (!Character.isLetterOrDigit(string.charAt(i))){
                 index = i;
                 return index;
             }
